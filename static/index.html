@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" href="favicon.ico" >
+  <link rel="stylesheet" href="js/element/1.4.3/index.css">
+  <!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-default/index.css"> -->
+  <link rel="stylesheet" href="js/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div id="app">
+<el-row><el-col :span="22" :offset="1">
+<h1>工具箱</h1>
+<el-tabs v-model="activeName">
+
+<el-tab-pane label="biz" name="biz">
+<!--时间戳 -->
+<div class="panel panel-primary"><div class="panel-heading">timestamp</div>
+  <div class="panel-body inputbox">
+    <el-form :inline="true">
+      <el-form-item><el-input v-model="timeObj.unix2bj.unixts"><template slot="prepend">unix时间戳</template></el-input></el-form-item>
+      <el-button type="primary" @click="tranbj">转成北京时间</el-button>
+      <el-form-item><el-input v-model="timeObj.unix2bj.bjtime"><template slot="prepend">北京时间</template></el-input></el-form-item>
+    </el-form>
+    <el-form :inline="true">
+      <el-form-item><el-input v-model="timeObj.bj2unix.bjyear"><template slot="prepend">北京时间</template><template slot="append">年</template></el-input></el-form-item>
+      <el-form-item><el-input v-model="timeObj.bj2unix.bjmonth"><template slot="append">月</template></el-input></el-form-item>
+      <el-form-item><el-input v-model="timeObj.bj2unix.bjday"><template slot="append">日</template></el-input></el-form-item>
+    </el-form>
+    <el-form :inline="true">
+      <el-form-item><el-input v-model="timeObj.bj2unix.bjhour"><template slot="append">时</template></el-input></el-form-item>
+      <el-form-item><el-input v-model="timeObj.bj2unix.bjmin"><template slot="append">分</template></el-input></el-form-item>
+      <el-form-item><el-input v-model="timeObj.bj2unix.bjsec"><template slot="append">秒</template></el-input></el-form-item>
+      <el-button type="primary" @click="trants">转成ts</el-button>
+      <el-form-item>
+        <el-select v-model="timeObj.bj2unix.tranststp" placeholder="请选择">
+          <el-option v-for="item in timeObj.bj2unix.transopts" :key="item.value" :label="item.text" :value="item.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-input v-model="timeObj.bj2unix.resunixts">
+          <template slot="append">秒</template>
+        </el-input>
+      </el-form-item>
+    </el-form>
+  </div>
+</div><!--时间戳 end -->
+<!--ajax request CQRS -->
+<div class="panel panel-primary"><div class="panel-heading">ajaxRequest</div>
+  <div class="panel-body inputbox">
+    <el-form :inline="true">
+      <el-form-item><el-input v-model="ajaxReq.url"><template slot="prepend">url</template></el-input></el-form-item>
+      <el-form-item>
+        <el-select v-model="ajaxReq.inftype" placeholder="请选择" @change="changeInf">
+          <el-option v-for="item in inftypes" :key="item.value" :label="item.text" :value="item.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-button type="primary" @click="simajax">submit</el-button>
+      <el-button type="primary" @click="ajaxreset">reset</el-button>
+    </el-form>
+    <el-row>
+      <el-input type="textarea" :rows="4" :cols="60" placeholder="参数" v-model="ajaxReq.param"></el-input>
+    </el-row>
+    <div class="resultbox"> {{ ajaxReq.res }} </div>
+  </div>
+</div>
+</el-tab-pane>
+
+<!--编解码 md5-->
+<el-tab-pane label="codec" name="codec">
+<el-row :gutter="20">
+<el-col :span="12"><div class="panel panel-primary">
+<div class="panel-heading">md5</div>
+<div class="panel-body inputbox">
+  <el-form><el-form-item>
+  <el-input type="textarea" :rows="4" :cols="60" v-model="md5dec.inputstr"></el-input></el-form-item>
+  <el-button type="primary" @click="md5">md5</el-button>
+  </el-form>
+  <div class="row resultbox"><ul><li>32位：{{ md5dec.output32 }}</li><li>16位：{{ md5dec.output16 }}</li></ul></div>
+</div>
+</div></el-col>
+
+<!-- url编解码-->
+<el-col :span="12"><div class="panel panel-primary">
+<div class="panel-heading">url decode/encode</div>
+<div class="panel-body inputbox">
+  <el-form><el-form-item>
+  <el-input type="textarea" :rows="4" :cols="60" placeholder="url" v-model="url.inputstr"></el-input></el-form-item>
+  <el-button type="primary" @click="codecurl('D')">decode</el-button>
+  <el-button type="primary" @click="codecurl('E')">encode</el-button>
+  </el-form>
+</div>
+</div></el-col>
+</el-row>
+
+
+<!--md5--><el-row :gutter="20">
+<el-col :span="12"><div class="panel panel-primary">
+<div class="panel-heading">unicode decode/encode</div>
+<div class="panel-body inputbox">
+  <el-form><el-form-item>
+    <el-input type="textarea" :rows="4" :cols="60" placeholder="str" v-model="unicodeCodec.inputstr"></el-input>
+  </el-form-item>
+  <el-button type="primary" @click="codecunicode('D')">decode</el-button>
+  <el-button type="primary" @click="codecunicode('E')">encode</el-button>
+  </el-form>
+</div>
+</div></el-col>
+</el-row>
+</el-tab-pane>
+
+
+
+<el-tab-pane label="upload" name="upload">
+<div class="panel panel-primary"><div class="panel-heading">更新静态文件</div>
+<div class="panel-body inputbox">
+  <div class="row oneline"> 地址 {{ urls.upload }} </div>
+  <el-form :inline="true">
+    <el-upload action="https://jsonplaceholder.typicode.com/posts/":multiple="false" :show-file-list="false">
+      <el-button size="small" type="primary">点击上传</el-button>
+    </el-upload>
+  </el-form>
+  <div class="row oneline">{{ filemate.res }}</div>
+</form>
+</div><!-- panel-body -->
+</div><!-- panel -->
+</el-tab-pane>
+
+<!-- <el-tab-pane label="js-cheat" name="js"></el-tab-pane> -->
+
+<el-tab-pane label="jsonfmt" name="jsonfmt">
+<div class="panel panel-primary"><div class="panel-heading">json格式化</div>
+<div class="panel-body inputbox">
+  <el-form><el-form-item>
+    <el-input type="textarea" :rows="10" :cols="60" placeholder="json" v-model="jsonarea.jsonRaw"></el-input></el-form-item>
+    <el-button type="primary" @click="formatjson">format</el-button>
+    <div class="row resultbox"><pre><code>{{jsonarea.output}}</code>
+    </pre></div>
+  </el-form>
+</div></div>
+</el-tab-pane>
+
+<!--文本处理 -->
+<el-tab-pane label="texteditor" name="texteditor">
+<div class="panel panel-primary"><div class="panel-heading">文本处理</div>
+<div class="panel-body inputbox">
+  <el-form><el-form-item>
+    <el-input type="textarea" :rows="10" :cols="60" placeholder="text" v-model="textEditArea.textRaw"></el-input></el-form-item>
+    <el-button type="primary" @click="textEdit('rmSpaceLine')">去除空行</el-button>
+    <div class="row resultbox"><pre>{{textEditArea.output}}</pre>
+    </div><!--<pre></pre> -->
+  </el-form>
+</div></div>
+</el-tab-pane>
+
+<!--发布 -->
+<el-tab-pane label="pub" name="third">
+<!-- 环境选择 -->
+<el-row><el-col :span="24"><div class="panel panel-primary">
+<div class="panel-heading">环境选择</div>
+<div class="panel-body inputbox">
+<el-form :inline="true">
+<el-form-item label="服务器">
+  <el-select v-model="main.srv" @change="changeSrv">
+        <el-option v-for="item in servs" :key="item.value" :label="item.text" :value="item.value"></el-option>
+      </el-select>
+    </el-form-item>
+</el-form>
+</div></div>
+</el-col>
+</el-row>
+
+<el-row :gutter="20">
+<!-- 发布html -->
+<el-col :span="12"><div class="panel panel-primary">
+<div class="panel-heading">发布html</div>
+<div class="panel-body inputbox">
+  <div class="row oneline"> 发布url:{{ urls.pub }}</br>
+    回滚为: {{ urls.rbHtml }} </div>
+  <el-form :inline="true">
+    <el-form-item label="是否强制">
+      <el-select v-model="pubhtml.pubType">
+        <el-option v-for="item in commonYN" :key="item.value" :label="item.text" :value="item.value"></el-option>
+      </el-select>
+    </el-form-item>
+
+    <el-form-item><el-input type="text" v-model="pubhtml.oldversion"><template slot="prepend">旧版本</template></el-input></el-form-item>
+
+    <el-button type="primary" @click="pubHtml">发布</el-button>
+    <el-button type="primary" @click="rollbackHtml">回滚</el-button>
+  </el-form>
+  <el-form><el-form-item><el-input type="textarea" :rows="8" :cols="70" placeholder="html内容" v-model="pubhtml.newHtmlContent"></el-input></el-form-item></el-form>
+  <div class="row resultbox">发布结果 {{ pubhtml.pubRes }}</div>
+</div>
+</div></el-col>
+
+
+<!-- 更新静态文件 -->
+<el-col :span="12"><div class="panel panel-primary">
+<div class="panel-heading">更新静态文件</div>
+<div class="panel-body inputbox">
+  <div class="row oneline">发布url：{{ urls.updFile }}</div>
+  <el-form>
+    <el-form-item label="文件">
+      <input type="file" id="fileInput" class="form-control"/>
+    </el-form-item>
+    <el-form-item label="name">
+      <el-input type="text" v-model="filemate.name"></el-input>
+    </el-form-item>
+    <el-form-item label="ver">
+      <el-input type="text" v-model="filemate.version"></el-input>
+    </el-form-item>
+    <el-form-item label="type">
+      <el-select v-model="filemate.type">
+        <el-option v-for="item in pubType" :key="item.value" :label="item.text" :value="item.value"></el-option>
+      </el-select>
+    </el-form-item>
+    <el-button type="primary" @click="updfile">更新</el-button>
+  </el-form>
+  <div class="row resultbox">发布结果{{ filemate.res }}</div>
+</div>
+</div></el-col>
+</el-row>
+</el-tab-pane>
+
+</el-tabs>
+
+</div><!--end of app-->
+</body>
+
+<script src="js/vue/2.4.2/vue.js"></script>
+<script src="js/element/1.4.3/index.js"></script>
+<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+<script src="js/main.js"></script>
+<script src="js/md5.js"></script>
+<script src="js/tool.js"></script>
+<script src="js/constant.js"></script>
+<script src="js/edit.js"></script>
+<script src="js/jquery/1.12.4/jquery.min.js"></script>
+<script src="js/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+
+<script>
+
+new Vue({
+  el: '#app',
+  data: function(){
+    return {
+      activeName: 'biz',//默认打开标签
+      filemate:{type:"J",name:"main",version: nowts, res:'' },
+      ajaxReq:{"inftype":'prj',"url":typeUrl['prj'].url ,"param": JSON.stringify(typeUrl['prj'].param) ,"res":''},
+      servs:srvs,
+      main:{srv:''},//环境选择区
+      urls:{updFile:'',pub:'',rbHtml:'',upload:url_eims_upload},
+      inftypes:[{text:'prjs',value:'prjs'}, {text:'prj',value:'prj'}, {text:'points',value:'points'}
+      ],
+      commonYN:[{text:'第一次',value:'Y'},{text:'非第一次',value:'N'}],
+      //unix -> bj
+      timeObj: timeObjInit,
+      pubhtml:{
+        pubhtml: '', oldversion:'' , pubRes:'',pubType:'Y'
+      },
+      url:{ "inputstr": '' },
+      unicodeCodec:{ "inputstr": '' },
+      md5dec:{
+        "inputstr": '',"output32":'',"output16":'',
+      },
+      jsonarea:{jsonRaw:'',output:''},
+      textEditArea:{textRaw:'',output:''},
+      pubType:[
+        {text:'JS',value:'J'},
+        {text:'CSS',value:'C'},
+        {text:'HTML',value:'H'}
+      ],
+    }
+  },
+  created:function () {
+    this.timeObj.unix2bj.bjtime = ts2date(this.timeObj.unix2bj.unixts);
+    this.timeObj.bj2unix.resunixts =  datestr2ts(this.timeObj.bj2unix.bjyear,this.timeObj.bj2unix.bjmonth,this.timeObj.bj2unix.bjday,this.timeObj.bj2unix.bjhour,this.timeObj.bj2unix.bjmin,this.timeObj.bj2unix.bjsec);
+    this.main.srv = srvs[0].value;
+    this.urls.updFile = HTTP+ this.main.srv+ urlParts.updFile;
+    this.urls.pub = HTTP+ this.main.srv + urlParts.pub;
+    this.urls.rbHtml = HTTP+ this.main.srv + urlParts.rbHtml;
+  },
+  methods: {
+    tranbj:function () {//ts 2 bj
+        this.timeObj.unix2bj.bjtime = ts2date(this.timeObj.unix2bj.unixts);
+    },
+    trants:function () {//bj 2 unix ts
+      let y = this.timeObj.bj2unix.bjyear;
+      let m = this.timeObj.bj2unix.bjmonth;
+      let d = this.timeObj.bj2unix.bjday;
+      let h = this.timeObj.bj2unix.bjhour;
+      let min = this.timeObj.bj2unix.bjmin;
+      let s = this.timeObj.bj2unix.bjsec;
+      switch (this.timeObj.bj2unix.tranststp){
+          case 'y': m = 1;
+          case 'm': d = 1;
+          case 'd': h = 0;
+          case 'h': min = 0;
+          case 'min': s = 0;
+      }
+      let res = datestr2ts(y,m,d,h,min,s);
+      this.timeObj.bj2unix.resunixts = res;
+    },
+
+    //ajax sim
+    simajax: function () {
+        console.log('req url '+this.ajaxReq.url+',param '+this.ajaxReq.param );
+        $.ajax({
+            type: "POST",
+            url: this.ajaxReq.url,
+            contentType: "application/json;charset=utf-8",
+            data: this.ajaxReq.param,
+            dataType: "json",
+            crossDomain: true,
+            xhrFields: { withCredentials: true },
+            success: function (data) {
+                console.log('res:'+ JSON.stringify(data));
+                this.ajaxReq.res = JSON.stringify(data);
+            }.bind(this),
+            error: function (data) {
+                this.ajaxReq.res = data;
+            }.bind(this)
+        });
+    },
+    ajaxreset: function () {
+        this.aurl = dfturl;
+        this.aparam = '';
+    },
+    changeInf: function(){
+        console.log('change '+this.ajaxReq.inftype);
+        this.ajaxReq.param = JSON.stringify( typeUrl[ this.ajaxReq.inftype ].param);
+        this.ajaxReq.url = typeUrl[ this.ajaxReq.inftype ].url;
+    },
+
+    // codec/decodes
+    codecurl:function(ctype){//url encode/decode
+      ctype==="D"?this.url.inputstr=decodeURI(this.url.inputstr):this.url.inputstr=encodeURI(this.url.inputstr);
+    },
+    codecunicode:function(ctype){//unicode de/en code
+      ctype==="D"?this.unicodeCodec.inputstr=decToHex(this.unicodeCodec.inputstr):this.unicodeCodec.inputstr=hexToDec(this.unicodeCodec.inputstr);
+    },
+    md5:function(){ //md5
+      let res32 = hex_md5(this.md5dec.inputstr);
+      this.md5dec.output32 = res32;
+      let res16 = res32.substr(8, 16);
+      this.md5dec.output16 = res16;
+    },
+    formatjson:function(){
+      let jsonRaw = this.jsonarea.jsonRaw;
+      let jsonfmted = JSON.stringify(JSON.parse(jsonRaw), null, 4);
+      // console.log('json fmt:'+jsonfmted);
+      this.jsonarea.output = jsonfmted;
+    },
+    textEdit:function(opType){
+      this.textEditArea.output = editWord(opType,this.textEditArea.textRaw);
+    },
+
+    //发布html
+    pubHtml:function(){
+        let updContent = {
+            "content": this.pubhtml.newHtmlContent,
+            "isFirst": this.pubhtml.pubType
+        };
+        console.log('pub html '+JSON.stringify(updContent) );
+        $.ajax({
+            type: "POST",
+            url: this.urls.pub,
+            data: updContent,
+            crossDomain: true,
+            xhrFields: { withCredentials: true },
+            success: function (data) {
+                console.log('res:'+ JSON.stringify(data));
+                this.pubhtml.pubRes = JSON.stringify(data);
+            }.bind(this),
+            error: function (data) {
+                this.pubhtml.pubRes = JSON.stringify(data);
+            }.bind(this)
+        });
+    },
+    //回滚 js
+    rollbackHtml:function(){
+        $.ajax({
+            type: "post",
+            url: this.urls.rbHtml,
+            crossDomain: true,
+            xhrFields: { withCredentials: true },
+            data: { "content": this.pubhtml.oldversion },
+            success: function (data) {
+                console.log('res:'+ JSON.stringify(data));
+                this.pubhtml.pubRes = JSON.stringify(data);
+            }.bind(this),
+            error: function (data) {
+                this.ares = 'fail:' + data;
+            }.bind(this)
+        });
+    },
+    changeSrv: function(){
+      console.log('change srv '+this.main.srv );
+      this.urls.updFile = HTTP+ this.main.srv+ urlParts.updFile;
+      this.urls.pub = HTTP+ this.main.srv + urlParts.pub;
+      this.urls.rbHtml = HTTP+ this.main.srv + urlParts.rbHtml;
+    },
+    //upload file ajax,crossdomain
+    updfile: function(){
+        let formData = new FormData();
+        formData.append("fileInput",$("#fileInput")[0].files[0]);
+        formData.append("type",this.filemate.type);
+        formData.append("name",this.filemate.name);
+        formData.append("version",this.filemate.version);
+        console.log('filemate:'+ formData );
+        $.ajax({
+            type: "POST",
+            url: this.urls.updFile,
+            processData: false,
+            contentType: false,
+            crossDomain: true,
+            xhrFields: { withCredentials: true },
+            data: formData,
+            beforeSend:function(){
+                this.filemate.res = "正在进行，请稍候";
+            }.bind(this),
+            success: function (data) {
+                this.filemate.res = data.msg;
+            }.bind(this),
+            error: function (data) {
+                this.filemate.res = '失败：' + data;
+            }.bind(this)
+        });
+    },
+  }
+})
+</script>
+</html>

@@ -1,0 +1,14 @@
+*.iml
+*.idea
+target
+java.io.tempdir
+*.log
+logs
+backup
+a*.sh
+frame-db-simple
+frame-main
+common-cas
+*.bak
+*.zip
+static/js/mine.js
