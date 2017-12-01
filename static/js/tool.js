@@ -196,7 +196,19 @@ function jsonformat(txt,compress/*是否为压缩模式*/){
     return draw.join('');
 }
 
-
+// let arr = new Array();
+// arr[0]='xxxx';
+// arr[1]='bssss';
+function containExist(str, substrs) {
+    for(let idx in substrs){
+        if( str.indexOf(substrs[idx]) >= 0 ){
+            return true;
+        }
+    }
+    return false;
+}
+// res = containExist('aabsdjklfd',arr);
+// console.log('res:'+res);
 
 
 

@@ -13,6 +13,23 @@
 <div id="app">
 <el-row><el-col :span="22" :offset="1">
 <h1>工具箱</h1>
+
+<!-- 环境选择 -->
+<el-row><el-col :span="24"><div class="panel panel-primary">
+<div class="panel-heading">环境选择</div>
+<div class="panel-body inputbox">
+<el-form :inline="true">
+<el-form-item label="服务器">
+  <el-select v-model="main.srv" @change="changeSrv">
+        <el-option v-for="item in servs" :key="item.value" :label="item.text" :value="item.value"></el-option>
+      </el-select>
+    </el-form-item>
+</el-form>
+</div></div>
+</el-col>
+</el-row>
+
+
 <el-tabs v-model="activeName">
 
 <el-tab-pane label="biz" name="biz">
@@ -51,7 +68,7 @@
 <div class="panel panel-primary"><div class="panel-heading">ajaxRequest</div>
   <div class="panel-body inputbox">
     <el-form :inline="true">
-      <el-form-item><el-input v-model="ajaxReq.url"><template slot="prepend">url</template></el-input></el-form-item>
+      <el-form-item><el-input v-model="ajaxReq.url" size="70"><template slot="prepend">url</template></el-input></el-form-item>
       <el-form-item>
         <el-select v-model="ajaxReq.inftype" placeholder="请选择" @change="changeInf">
           <el-option v-for="item in inftypes" :key="item.value" :label="item.text" :value="item.value"></el-option>
@@ -63,7 +80,9 @@
     <el-row>
       <el-input type="textarea" :rows="4" :cols="60" placeholder="参数" v-model="ajaxReq.param"></el-input>
     </el-row>
-    <div class="resultbox"> {{ ajaxReq.res }} </div>
+    <div class="resultbox">
+      <pre><code>{{ajaxReq.res}}</code></pre>
+    </div>
   </div>
 </div>
 </el-tab-pane>
@@ -112,30 +131,13 @@
 </el-tab-pane>
 
 
-
-<el-tab-pane label="upload" name="upload">
-<div class="panel panel-primary"><div class="panel-heading">更新静态文件</div>
-<div class="panel-body inputbox">
-  <div class="row oneline"> 地址 {{ urls.upload }} </div>
-  <el-form :inline="true">
-    <el-upload action="https://jsonplaceholder.typicode.com/posts/":multiple="false" :show-file-list="false">
-      <el-button size="small" type="primary">点击上传</el-button>
-    </el-upload>
-  </el-form>
-  <div class="row oneline">{{ filemate.res }}</div>
-</form>
-</div><!-- panel-body -->
-</div><!-- panel -->
-</el-tab-pane>
-
-<!-- <el-tab-pane label="js-cheat" name="js"></el-tab-pane> -->
-
 <el-tab-pane label="jsonfmt" name="jsonfmt">
 <div class="panel panel-primary"><div class="panel-heading">json格式化</div>
 <div class="panel-body inputbox">
   <el-form><el-form-item>
     <el-input type="textarea" :rows="10" :cols="60" placeholder="json" v-model="jsonarea.jsonRaw"></el-input></el-form-item>
     <el-button type="primary" @click="formatjson">format</el-button>
+    <el-button type="primary" @click="clearjson">clear</el-button>
     <div class="row resultbox"><pre><code>{{jsonarea.output}}</code>
     </pre></div>
   </el-form>
@@ -147,8 +149,10 @@
 <div class="panel panel-primary"><div class="panel-heading">文本处理</div>
 <div class="panel-body inputbox">
   <el-form><el-form-item>
-    <el-input type="textarea" :rows="10" :cols="60" placeholder="text" v-model="textEditArea.textRaw"></el-input></el-form-item>
+    <el-input type="textarea" :autosize="{ minRows: 4, maxRows: 20}" :cols="60" placeholder="text" v-model="textEditArea.textRaw"></el-input></el-form-item>
     <el-button type="primary" @click="textEdit('rmSpaceLine')">去除空行</el-button>
+    <el-button type="primary" @click="textEdit('rmComment')">去除注释</el-button>
+    <el-button type="primary" @click="textEdit('derangement')">乱序</el-button>
     <div class="row resultbox"><pre>{{textEditArea.output}}</pre>
     </div><!--<pre></pre> -->
   </el-form>
@@ -157,20 +161,7 @@
 
 <!--发布 -->
 <el-tab-pane label="pub" name="third">
-<!-- 环境选择 -->
-<el-row><el-col :span="24"><div class="panel panel-primary">
-<div class="panel-heading">环境选择</div>
-<div class="panel-body inputbox">
-<el-form :inline="true">
-<el-form-item label="服务器">
-  <el-select v-model="main.srv" @change="changeSrv">
-        <el-option v-for="item in servs" :key="item.value" :label="item.text" :value="item.value"></el-option>
-      </el-select>
-    </el-form-item>
-</el-form>
-</div></div>
-</el-col>
-</el-row>
+
 
 <el-row :gutter="20">
 <!-- 发布html -->
@@ -225,6 +216,21 @@
 </el-row>
 </el-tab-pane>
 
+<el-tab-pane label="upload" name="upload">
+<div class="panel panel-primary"><div class="panel-heading">更新静态文件</div>
+<div class="panel-body inputbox">
+  <div class="row oneline"> 地址 {{ urls.upload }} </div>
+  <el-form :inline="true">
+    <el-upload action="https://jsonplaceholder.typicode.com/posts/":multiple="false" :show-file-list="false">
+      <el-button size="small" type="primary">点击上传</el-button>
+    </el-upload>
+  </el-form>
+  <div class="row oneline">{{ filemate.res }}</div>
+</form>
+</div><!-- panel-body -->
+</div><!-- panel -->
+</el-tab-pane>
+
 </el-tabs>
 
 </div><!--end of app-->
@@ -233,9 +239,10 @@
 <script src="js/vue/2.4.2/vue.js"></script>
 <script src="js/element/1.4.3/index.js"></script>
 <!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
-<script src="js/main.js"></script>
+<!-- <script src="js/main.js"></script> -->
 <script src="js/md5.js"></script>
 <script src="js/tool.js"></script>
+<script src="js/mine.js"></script>
 <script src="js/constant.js"></script>
 <script src="js/edit.js"></script>
 <script src="js/jquery/1.12.4/jquery.min.js"></script>
@@ -318,7 +325,8 @@ new Vue({
             xhrFields: { withCredentials: true },
             success: function (data) {
                 console.log('res:'+ JSON.stringify(data));
-                this.ajaxReq.res = JSON.stringify(data);
+                //JSON.stringify(JSON.parse(jsonRaw), null, 4)
+                this.ajaxReq.res = JSON.stringify(data,null, 4);
             }.bind(this),
             error: function (data) {
                 this.ajaxReq.res = data;
@@ -350,12 +358,25 @@ new Vue({
     },
     formatjson:function(){
       let jsonRaw = this.jsonarea.jsonRaw;
-      let jsonfmted = JSON.stringify(JSON.parse(jsonRaw), null, 4);
-      // console.log('json fmt:'+jsonfmted);
-      this.jsonarea.output = jsonfmted;
+      try{
+        let jsonfmted = JSON.stringify(JSON.parse(jsonRaw), null, 4);
+        // console.log('json fmt:'+jsonfmted);
+        this.jsonarea.output = jsonfmted;
+      }catch(err){
+        this.$message.error('格式化报错'+err.message);
+      }
+    },
+    clearjson:function(){
+      this.jsonarea.jsonRaw= '';
+      this.jsonarea.output = '';
     },
     textEdit:function(opType){
-      this.textEditArea.output = editWord(opType,this.textEditArea.textRaw);
+      try{
+        this.textEditArea.output = editWord(opType,this.textEditArea.textRaw);
+      }catch(err){
+        this.$message.error('处理报错'+err.message);
+      }
+
     },
 
     //发布html
