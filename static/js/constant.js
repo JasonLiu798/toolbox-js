@@ -10,7 +10,11 @@ window.nowHour = nowDate.getHours();
 window.nowMin = nowDate.getMinutes();
 window.nowSec = nowDate.getSeconds();
 
+let SQLS = [
+  {'text':'count','value':'count'},
+  {'text':'desc','value':'desc'},
 
+];
 // window.prjurl = srv+'/aa/getlist';
 
 let HTTP= 'http://';
@@ -21,22 +25,27 @@ let srv = HTTP+ srvs[0].value;
 
 let typeUrl = {
     "prj":{
-        "url":srv+'/project/get',
+        "url":'/project/get',
         "param":{"projectId":"0040999f-d3e3-11e7-9d4a-c81f66de7db1"}
     },
     "prjs":{
-        "url":srv+'/project/getlist',
+        "url":'/project/getlist',
         "param":{"prjStatus":"U"}
     },
     "items":{
-        "url":srv+'/projectitem/getlist',
+        "url":'/projectitem/getlist',
         "param":{"projectId":"0040999f-d3e3-11e7-9d4a-c81f66de7db1" }
     }
 };
 
-let urlParts = {updFile:'/contentmgr/updfile',pub:'/contentmgr/pub',rbHtml:'/contentmgr/rollback'};
-let url_eims_upload = "http://eims-mis.intsit.sfdc.com.cn:1080/pub/tpi_pdf_save";
+let urlParts = {
+  updFile:'/contentmgr/updfile',
+  pub:'/contentmgr/pub',
+  rbHtml:'/contentmgr/rollback',
+  searchdb:'/text/textp'
+};
 
+let url_eims_upload = "http://eims-mis.intsit.sfdc.com.cn:1080/pub/tpi_pdf_save";
 
 let timeObjInit =
 {
