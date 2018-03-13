@@ -97,11 +97,11 @@
   <el-input type="textarea" :rows="4" :cols="60" v-model="md5dec.inputstr"></el-input></el-form-item>
   <el-button type="primary" @click="md5">md5</el-button>
   </el-form>
-  <div class="row resultbox"><ul><li>32位：{{ md5dec.output32 }}</li><li>16位：{{ md5dec.output16 }}</li></ul></div>
+  <div class="row resultbox"><ul><li v-if="md5dec.output32">32位：{{ md5dec.output32 }}</li><li v-if="md5dec.output16">16位：{{ md5dec.output16 }}</li></ul></div>
 </div>
 </div></el-col>
 
-<!-- url编解码-->
+<!-- url decode/encode 编解码-->
 <el-col :span="12"><div class="panel panel-primary">
 <div class="panel-heading">url decode/encode</div>
 <div class="panel-body inputbox">
@@ -112,6 +112,8 @@
   </el-form>
 </div>
 </div></el-col>
+
+
 </el-row>
 
 
@@ -127,6 +129,7 @@
   </el-form>
 </div>
 </div></el-col>
+
 </el-row>
 </el-tab-pane>
 
@@ -259,7 +262,22 @@
 </el-tab-pane>
 
 <el-tab-pane label="upload" name="upload">
-<div class="panel panel-primary"><div class="panel-heading">更新静态文件</div>
+<!-- md5文件编码-->
+<el-row>
+<el-col :span="24"><div class="panel panel-primary">
+<div class="panel-heading">文件md5</div>
+<div class="panel-body inputbox">
+    <input type="file" @change="filemd5"/>
+    <div class="row resultbox">{{fileCrypt.progress}}
+    <ul>
+      <li v-for="item in fileCrypt.cryptFiles">{{item.name}}:&nbsp;{{item.val}}</li>
+    </ul>
+    </div>
+</div>
+</div></el-col>
+</el-row>
+
+<el-row><div class="panel panel-primary"><div class="panel-heading">更新静态文件</div>
 <div class="panel-body inputbox">
   <div class="row oneline"> 地址 {{ urls.upload }} </div>
   <el-form :inline="true">
@@ -269,8 +287,8 @@
   </el-form>
   <div class="row oneline">{{ filemate.res }}</div>
 </form>
-</div><!-- panel-body -->
-</div><!-- panel -->
+</div><!-- panel-body --></div><!-- panel --></el-row>
+
 </el-tab-pane>
 
 </el-tabs>
@@ -289,6 +307,17 @@
 <script src="js/edit.js"></script>
 <script src="js/jquery/1.12.4/jquery.min.js"></script>
 <script src="js/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<!-- <script src="js/lib/spark-md5.js"></script> -->
+
+<script src="js/lib/crc32.js"></script>
+<script src="js/lib/md5.js"></script>
+<script src="js/lib/sha1.js"></script>
+<script src="js/lib/sha256.js"></script>
+<script src="js/lib/sha3.js"></script>
+<script src="js/lib/sha512.js"></script>
+<script src="js/lib/ripemd160.js"></script>
+
+<script src="js/lib/crypt.js"></script>
 
 <script>
 
@@ -331,6 +360,7 @@ new Vue({
         {text:'CSS',value:'C'},
         {text:'HTML',value:'H'}
       ],
+      fileCrypt:{cryptFiles:[],progress:''},
     }
   },
   created:function () {
@@ -422,6 +452,22 @@ new Vue({
       this.md5dec.output32 = res32;
       let res16 = res32.substr(8, 16);
       this.md5dec.output16 = res16;
+
+    },
+    filemd5:function($event){
+      let that = this;
+      // that =
+      that.fileCrypt.progress = 'crpyting.....';
+      progressiveRead($event.target.files[0],workerImpl,function(enabledAlgorithms,crc32intermediate){
+        let reslist = [{name:'crc',val:decimalToHexString(crc32intermediate.res) }];
+        // debugger
+        for (var j = 0; j < enabledAlgorithms.length ; j++) {
+            let res = enabledAlgorithms[j].instance.finalize().toString();
+            reslist.push({name:enabledAlgorithms[j].name,val:res });
+        }
+        that.fileCrypt.cryptFiles = reslist;
+        that.fileCrypt.progress = 'crpyted';
+      });
     },
     addsql:function(addtype){
       switch(addtype){

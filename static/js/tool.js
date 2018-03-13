@@ -30,6 +30,20 @@ function datestr2ts(y,m,d,h,min,s) {
 }
 var emptyFile={"type":'',"name":'',"version":''};//,"content":''};
 
+
+function decimalToHexString(number) {
+    if (number < 0) {
+        number = 0xFFFFFFFF + number + 1;
+    }
+    return number.toString(16);
+}
+function swapendian32(val) {
+    return (((val & 0xFF) << 24)
+       | ((val & 0xFF00) << 8)
+       | ((val >> 8) & 0xFF00)
+       | ((val >> 24) & 0xFF)) >>> 0;
+}
+
 //uni encode
 function decToHex(str) {
     var res=[];
