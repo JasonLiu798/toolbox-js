@@ -11,4 +11,7 @@ frame-main
 common-cas
 *.bak
 *.zip
-static/js/mine.js
+html/js/mine.js
+node/node_modules
+node/package-lock.json
+node/src/common/js/constantPrivate.vue
